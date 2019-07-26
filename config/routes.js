@@ -1,6 +1,9 @@
 const axios = require('axios');
-
+const bcrypt = require('bcryptjs');
 const { authenticate } = require('../auth/authenticate');
+const jwt = require('jsonwebtoken');
+const User = require('../Users/user-model');
+const jwtSecret = require('../config/jwtSecret');
 
 module.exports = server => {
   server.post('/api/register', register);
@@ -9,11 +12,38 @@ module.exports = server => {
 };
 
 function register(req, res) {
-  // implement user registration
+  let user = req.body;
+  const hash = bcrypt.hashSync(user.password, 12);
+  user.password = hash;
+
+  User.add(user)
+    .then(saved => {
+      res.status(201).json(saved);
+    })
+    .catch(err => {
+      res.status(500).json({ message: 'There was an error saving user.' });
+    })
 }
 
 function login(req, res) {
-  // implement user login
+  let { username, password } = req.body;
+
+  User.findBy({ username })
+    .first()
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+        const token = generateToken(user);
+        res.status(200).json({
+          message: `Welcome to DadJokes, ${user.username}!`,
+          token
+        });
+      } else {
+        res.status(401).json({ message: 'Invalid credentials' });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({ message: 'There was an error logging in' });
+    });
 }
 
 function getJokes(req, res) {
@@ -30,3 +60,14 @@ function getJokes(req, res) {
       res.status(500).json({ message: 'Error Fetching Jokes', error: err });
     });
 }
+
+function generateToken(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  };
+  const options = {
+    expiresIn: '1d',
+  };
+  return jwt.sign(payload, secret.jwtSecret, options);
+};
