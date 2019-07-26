@@ -20,6 +20,6 @@ describe('user-model.js', () => {
             expect(user.name).toHaveLength(1);
         });
 
-    describe('()')
+    // describe('()')
     });
 });
