@@ -8,20 +8,20 @@ module.exports = {
 };
 
 async function add(user) {
-    const [id] = await db('user').insert(user);
+    const [id] = await db('users').insert(user);
     return findById(id);
 }
 
 function find() {
-    return db('user').select('id', 'username', 'password');
+    return db('users').select('id', 'username', 'password');
 }
 
 function findBy(filter) {
-    return db('user').where(filter);
+    return db('users').where(filter);
 }
 
 function findById(id) {
-    return db('user')
+    return db('users')
         .where({ id })
-        .first()
+        .first();
 }

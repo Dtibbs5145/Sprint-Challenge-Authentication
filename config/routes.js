@@ -1,9 +1,7 @@
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
-const { authenticate } = require('../auth/authenticate');
-const jwt = require('jsonwebtoken');
+const { authenticate, generateToken } = require('../auth/authenticate');
 const User = require('../Users/user-model');
-const jwtSecret = require('../config/jwtSecret');
 
 module.exports = server => {
   server.post('/api/register', register);
@@ -60,14 +58,3 @@ function getJokes(req, res) {
       res.status(500).json({ message: 'Error Fetching Jokes', error: err });
     });
 }
-
-function generateToken(user) {
-  const payload = {
-    subject: user.id,
-    username: user.username,
-  };
-  const options = {
-    expiresIn: '1d',
-  };
-  return jwt.sign(payload, secret.jwtSecret, options);
-};
